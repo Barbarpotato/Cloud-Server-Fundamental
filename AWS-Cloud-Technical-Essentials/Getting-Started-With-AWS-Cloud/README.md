@@ -37,7 +37,7 @@ API calls to AWS can also be performed by executing code with programming langua
 When you begin working with the AWS Cloud, managing security and compliance is a shared responsibility between AWS and you. To depict this shared responsibility, AWS created the shared responsibility model. This distinction of responsibility is commonly referred to as security of the cloud, versus security in the cloud.
 ![security](/images/security-1.png)<br>
 
-<a name="IAM></a>
+<a name="IAM"></a>
 
 ## Introduction to AWS Identity and Access Management
 
