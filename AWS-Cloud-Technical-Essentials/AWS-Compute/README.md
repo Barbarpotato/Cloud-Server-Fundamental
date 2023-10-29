@@ -102,7 +102,7 @@ When you hear the word container, you may associate it with Docker. Docker is a 
 ion service. AWS offers two container orchestration services: Amazon Elastic Container Service (ECS) and Amazon Elastic Kubernetes Service (EKS).
 
 ### WHAT IS THE DIFFERENCE BETWEEN CONTAINERS AND VMS?
-[!container vs vms](/images/containerVSvms.png)
+![container vs vms](/images/containerVSvms.png)
 Containers share the same operating system and kernel as the host they exist on, whereas virtual machines contain their operating system. Since each virtual machine has to maintain a copy of an operating system, there’s a degree of wasted space.A container is more lightweight. They spin up quicker, almost instantly. This difference in startup time becomes instrumental when designing applications that need to scale quickly during input/output (I/O) bursts.While containers can provide speed, virtual machines offer you the full strength of an operating system and offer more resources, like package installation, a dedicated kernel, and more.
 
 ### ORCHESTRATE CONTAINERS
