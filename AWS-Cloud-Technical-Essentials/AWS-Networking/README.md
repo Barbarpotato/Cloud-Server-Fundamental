@@ -3,6 +3,8 @@
 - Table Of Contents
     - [Networking](#Networking)
     - [Virtual Private Cloud (VPC)](#VPC)
+    - [Route Tables](#route_table)
+    - [ACL & Security Groups](#acl_sec)
 
 <a name='Networking'></a>
 
@@ -104,6 +106,9 @@ To enable internet connectivity for your VPC, you need to create an internet gat
 A virtual private gateway allows you to connect your AWS VPC to another private network. Once you create and attach a VGW to a VPC, the gateway acts as anchor on the AWS side of the connection. On the other side of the connection, you’ll need to connect a customer gateway to the other private network. A customer gateway device is a physical device or software application on your side of the connection. Once you have both gateways, you can then establish an encrypted VPN connection between the two sides. 
 
 ## Amazon VPC Routing and Security
+
+<a name='route_table'>
+
 ### The Main Route Table
 When you create a VPC, AWS creates a route table called the main route table. A route table contains a set of rules, called routes, that are used to determine where network traffic is directed. AWS assumes that when you create a new VPC with subnets, you want traffic to flow between them. Therefore, the default configuration of the main route table is to allow traffic between all subnets in the local network. Below is an example of a main route table:   
 [!route-table](/images/route-table.png)
@@ -115,6 +120,8 @@ While the main route table controls the routing for your VPC, you may want to be
 If you associate a custom route table with a subnet, the subnet will use it instead of the main route table. By default, each custom route table you create will have the local route already inside it, allowing communication to flow between all resources and subnets inside the VPC. 
 [!custom-route-table](/images/custom-route-table.png)
 <br>
+
+<a name='acl_sec'></a>
 
 ### Secure Your Subnets with Network ACLs
 Think of a network ACL as a firewall at the subnet level. A network ACL enables you to control what kind of traffic is allowed to enter or leave your subnet. You can configure this by setting up rules that define what you want to filter. Here’s an example.
