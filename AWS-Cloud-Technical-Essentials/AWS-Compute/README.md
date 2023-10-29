@@ -179,7 +179,7 @@ AWS Lambda requires zero administration from the user. You upload your source co
 
 ### How Lambda Works
 There are three primary components of a Lambda function: the trigger, code, and configuration.The code is source code, that describes what the Lambda function should run. This code can be authored in three ways.
-![lambda-works](/images/lambda-works.png)
+![lambda-works](/images/lambda-works.png)<br>
 - You create the code from scratch.
 - You use a blueprint that AWS provides.
 - You use same code from the AWS Serverless Application Repository, a resource that contains sample applications, such as “hello world” code, Amazon Alexa Skill sample code, image resizing code, video encoding, and more.
