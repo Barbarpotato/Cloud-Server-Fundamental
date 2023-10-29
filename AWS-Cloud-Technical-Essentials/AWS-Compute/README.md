@@ -125,9 +125,9 @@ This coordination is handled by a container orchestrate
 
 ### MANAGE CONTAINERS WITH AMAZON ELASTIC CONTAINER SERVICE (AMAZON ECS)
 Amazon ECS is an end-to-end container orchestration service that allows you to quickly spin up new containers and manage them across a cluster of EC2 instances.<br>
-[! ecs](/images/ecs.png)<br>
+![ecs](/images/ecs.png)<br>
 To run and manage your containers, you need to install the Amazon ECS Container Agent on your EC2 instances. This agent is open source and responsible for communicating back to the Amazon ECS service about cluster management details. You can run this agent on both Linux and Windows AMIs. An instance with the container agent installed is often called a container instance.
-[! ecs-container](/images/ecs-container.png)
+![ecs-container](/images/ecs-container.png)
 <br>
 Once the Amazon ECS container instances are up and running, you can perform actions that include, but are not limited to, launching and stopping containers, getting cluster state, scaling in and out, scheduling the placement of containers across your cluster, assigning permissions, and meeting availability requirements.
 
@@ -179,7 +179,7 @@ AWS Lambda requires zero administration from the user. You upload your source co
 
 ### How Lambda Works
 There are three primary components of a Lambda function: the trigger, code, and configuration.The code is source code, that describes what the Lambda function should run. This code can be authored in three ways.
-[!lambda-works](/images/lambda-works.png)
+![lambda-works](/images/lambda-works.png)
 - You create the code from scratch.
 - You use a blueprint that AWS provides.
 - You use same code from the AWS Serverless Application Repository, a resource that contains sample applications, such as “hello world” code, Amazon Alexa Skill sample code, image resizing code, video encoding, and more.
