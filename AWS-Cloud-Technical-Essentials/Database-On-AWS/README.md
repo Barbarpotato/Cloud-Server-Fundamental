@@ -2,6 +2,8 @@
 
 - Table Of Contents
     - [Relational Database Service (RDS)](#RDS)
+    - [Dynamo DB](#dynamo)
+    - [Excercise](#Excercise)
 
 <a name='RDS'></a>
 
@@ -79,6 +81,8 @@ To improve availability, Amazon RDS Multi-AZ ensures that you have two copies of
 
 When you create a DB instance, a domain name system (DNS) name is provided. AWS uses that DNS name to failover to the standby database. In an automatic failover, the standby database is promoted to the primary role and queries are redirected to the new primary database.   
 
+
+<a name='dynamo'></a>
 
 ##  Introduction to Amazon DynamoDB
 
