@@ -4,7 +4,7 @@
     - [Block & Object Storage](#storage)
         - [Instance Store](#instant)
         - [Elastic Block Store](#ebs)
-        - [Objext Storage S3](#s3)
+        - [Object Storage S3](#s3)
     - [Choose the Right Storage Service](#choose)
     - [Excercise](#excercise)
 
