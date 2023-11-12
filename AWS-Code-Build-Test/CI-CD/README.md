@@ -22,7 +22,7 @@ In this task, you use AWS CodePipeline to create a pipeline.
 
 9. In the Review step, choose Create pipeline. You should see a Success message.
 
-![pipeline](/images/ci-1.jpeg)<br>
+![pipeline](/images/ci-1.png)<br>
 
 ## Task 2: Creating a feature branch
 
