@@ -207,7 +207,7 @@ Imperative object configuration lets you create objects by specifying the action
 ## Create a Pod with a declarative command
 The previous two ways to create a Pod were imperative – we explicitly told kubectl what to do. While the imperative commands are easy to understand and run, they are not ideal for a production environment. Let’s look at declarative commands.
 1. A sample hello-world-apply.yaml file is provided in this directory. Use the Explorer again to open this file. Notice the following:
-    - ![tutor 2](/images/create_pod_declr_1.png)<br>
+    - ![tutor 2](/images/create_pod_declr_1.png)<br> 
     - We are creating a Deployment `(kind: Deployment)`.
     - There will be three replica Pods for this Deployment `(replicas: 3)`.
     - The Pods should run the hello-world image `(- image: us.icr.io/<my_namespace>/hello-world:1)`.
@@ -258,7 +258,7 @@ Since there are three replicas of this application deployed in the cluster, Kube
     ```
     for i in `seq 10`; do curl -L localhost:8001/api/v1/namespaces/sn-labs-$USERNAME/services/hello-world/proxy; done
     ```
-    ![tutor 2](/images/load_balancing_6.png)<br>
+    ![tutor 2](/images/.png)<br>
     You should see more than one Pod name, and quite possibly all three Pod names, in the output. This is because Kubernetes load balances the requests across the three replicas, so each request could hit a different instance of our application.
 6. Delete the Deployment and Service. This can be done in a single command by using slashes.
     ```
