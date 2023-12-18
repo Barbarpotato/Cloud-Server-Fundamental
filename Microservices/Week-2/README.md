@@ -1,6 +1,7 @@
 # Table Of Contents
 - [CRUD Operation in Flask](#flask)
 - [Swagger Documentation for RESTAPI](#Swagger)
+- [GraphQL]($graphql)
 
 # Creating Flask REST API
 1. Open a new Terminal in the lab environment.
@@ -307,3 +308,39 @@ docker run -p 8080:8080 mynewserver
 ```
 18. Now click on Launch Application and enter the port number 8080. This will open a browser window. Append the path /greetings to the URL. You should see the greetings in the page.
 ![output](/images/newserver_output.png)<br>
+
+<a name="graphql"></a>
+
+# Querying with GraphQL
+## Run a GraphQL service
+1. uild the application by running the following command. This will build the docker application using the docker file in the current directory and tag it graphqlservice.
+```
+docker build . -t graphqlservice
+```
+2. Run the application that you just built on port 8080, by running the following command on the terminal.
+```
+docker run -dp 8080:4000 graphqlservice
+```
+3. To confirm that the service is running, execute the following command.
+
+
+## Run GraphQL queries on Postman
+1. Choose Body and GraphQL as shown in the image below to start entering your query.
+![postman](/images/postman_graphql.png)<br>
+2. You will first query for all the cities in the US. What you can get is the city name and the state they are in. Paste the following in the Query tab and click Send.
+```json
+{
+    cities {
+        city
+        state
+        }
+}
+```
+3. You can now try to retrieve just the names of the cities in a particular state. To do this, you need to pass the state as a parameter. You will now request the state name in the return value as you are querying only for one state.
+```
+{
+    cities(state:"Florida") {
+        city
+    }
+}
+```
