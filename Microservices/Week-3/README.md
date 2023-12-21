@@ -56,8 +56,8 @@ But this application is not complete, you are yet to build the back end to do th
 
 3. You start by defining the first AWS Lambda function to Capitalize the input text.
 - Provide the function name and runtime. Choose Python 3.9 for this.
-- Defining the function will look like this:
-    ![lambda](/images/lambda-img.png)<br>
+- Defining the function will look like this:<br>
+![lambda](/images/lambda-img.png)<br>
 - The code you have written is very basic, as it accepts input text as part of the body (it’s a HTTP POST function). And returns the object again as input text with capitalized value (so you can chain this to the reverse function).
     ```python
     import json
@@ -72,7 +72,7 @@ But this application is not complete, you are yet to build the back end to do th
     ![test event](/images/test-event-lambda.png)<br>
 - And once you deploy your function, you can then test it and see the following outcome.
     ![test event 2](/images/test-event-lambda=2.png)<br>
-- Similarly, you create the reverse function.
+- Similarly, you create the reverse function.<br>
     ![reverse](/images/reverse-function.png)<br>
     ```python
     import json
@@ -82,7 +82,7 @@ But this application is not complete, you are yet to build the back end to do th
         reversed_input_text = input_text [::-1]
         return {"inputText": reversed_input_text}
     ```
-- test it
+- test it<br>
     ![test3](/images/test-event-lambda=3.png)<br>
 
 ## Step functions
@@ -94,15 +94,15 @@ But this application is not complete, you are yet to build the back end to do th
     ![design workflow](/images/design-workflow.png)<br>
     ![workflow-1](/images/worfklow-1.png)<br>
     ![workflow-1](/images/worfklow-2.png)<br>
-    ![workflow-1](/images/worfklow-3.png)<br>
-- Click on New execution to test your State machine.
+    ![workflow-1](/images/worfklow-3png.png)<br>
+- Click on New execution to test your State machine.<br>
     ![result workflow](/images/result-worflow-1.png)<br>
     ![result workflow2](/images/result-worflow-2.png)<br>
 
 ## API Gateway
 - Choose new API
     ![gateway1](/images/gateway-1.png)<br>
-- Create resource from that API
+- Create resource from that API<br>
     ![gateway2](/images/gateway-2.png)<br>
 - Create method from that API and setup like this
     ![gateway3](/images/gateway-3.png)<br>
@@ -114,7 +114,7 @@ But this application is not complete, you are yet to build the back end to do th
 - Generate the SDK, so you can use the generated code in your web app and call this API Gateway.
     ![gateway6](/images/gateway-6.png)<br>
     
-- You then extract the generated JavaScript code as below:
+- You then extract the generated JavaScript code as below:<br>
     ![gateway7](/images//gateway-7.png)<br>
 
 - And finally deploy the API (back in the AWS API Gateway section).
