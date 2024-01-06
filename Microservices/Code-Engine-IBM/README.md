@@ -2,9 +2,9 @@
 - [Deploying Your first application on Code Engine](#first)
 - [Deploying Your first Docker Image on Code Engine](#docker)
 - [Deploy, Update, and Scale Microservices using Serverless]($codeengine)
+- [Final Project](#final)
 
-
-<a name="first></a>
+<a name="first"></a>
 
 # Deploying your first application on Code Engine
 
@@ -196,3 +196,36 @@ curl <your deplymenturl>/websites/Trinity
 
 5. You will see the websites of all colleges which have Trinity in their name listed.
 
+
+<a name="final"></a>
+
+## Final Project
+
+After completing this lab, you will be able to:
+
+1. Deploy application on Code Engine and Create APIs.
+2. Use microservices in applications.
+
+### Set-up : Deploy Applications
+1. Open the Code Engine CLI.
+2. Deploy the Product Details python application which provides API endpoints that can be used to get the products details.
+    build-source - https://github.com/ibm-developer-skills-network/dealer_evaluation_backend.git
+    build-context-dir - products_list
+    port - 5000
+
+```bash
+ibmcloud ce application create --name prodlist --image us.icr.io/${SN_ICR_NAMESPACE}/prodlist --registry-secret icr-secret --port 5000 --build-context-dir products_list --build-source https://github.com/ibm-developer-skills-network/dealer_evaluation_backend.git
+```
+
+3. Deploy the Dealer Pricing Details Node.js application, which provides API endpoints that can be used to get the dealer pricing details.
+    build-source - https://github.com/ibm-developer-skills-network/dealer_evaluation_backend.git
+    build-context-dir - dealer_details
+    port - 8080
+    name - dealerdetails
+    image - us.icr.io/${SN_ICR_NAMESPACE}/dealerdetails
+
+### Modify and Deploy Frontend application
+1. In the terminal, go to /home/projects directory.
+2. Clone the repository https://github.com/ibm-developer-skills-network/dealer_evaluation_frontend.git in your /home/project directory.
+3. Change to the dealer_evaluation_frontend directory.
+4. Go to index.html on the browser and edit the place holder values (http://localhost:5000/ and http://localhost:8080/), copy the deployment URLs you copied in the appropriate location. Make sure you end the URLs with a /.

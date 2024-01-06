@@ -288,3 +288,227 @@ PipelineRun started: cd-pipeline-run-rf6zp
 Waiting for logs to be available...
 [clone : checkout] Cloning into 'wtecc-CICD_PracticeCode'...
 ```
+
+<a name="github-triggers"></a>
+
+# Adding Github Triggers
+Running a pipeline manually has limited uses. In this lab you will create a Tekton Trigger to cause a pipeline run from external events like changes made to a repo in GitHub.
+
+<img src="https://www.redhat.com/rhdc/managed-files/ohc/Filtering%20Tekton%20trigger%20operations-1.jpeg">
+
+After completing this lab, you will be able to:
+1. Create an EventListener, a TriggerBinding and a TriggerTemplate
+2. State how to trigger a deployment when changes are made to github
+
+## Set Up the Lab Environment
+You have a little preparation to do before you can start the lab.
+
+1. Open a Terminal
+2. Clone the repo: git clone https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git
+3. Change directory : cd wtecc-CICD_PracticeCode/labs/02_add_git_trigger/
+
+## Prerequisites
+This lab starts with the `cd-pipeline` pipeline and `checkout` and `echo` tasks from the previous lab.
+1. Check the task you will created: `tkn task ls`
+2. Check that the pipeline was created: `tkn pipeline ls`
+
+## Step1: Create an EventListener
+The first thing you need is an event listener that is listening for incoming events from GitHub.
+
+You will update the eventlistener.yaml file to define an EventListener named cd-listener that references a TriggerBinding named cd-binding and a TriggerTemplate named cd-template.
+
+`Your Task`
+
+1. The first thing you want to do is give the EventListener a good name. Change <place-name-Here> to cd-listener.
+2. The next thing is to add a service account. Add a serviceAccountName: with a value of pipeline to the spec section.
+3. Now you need to define the triggers. Add a triggers: section under spec:. This is where you will define the bindings and template.
+4. Add a bindings: section under the triggers: section with a ref: to cd-binding. Since there can be mutiple triggers, make sure you define - bindings as a list using the dash - prefix. Also since there can be multiple bindings, make sure you defne the - ref: with a dash - prefix as well.
+5. Add a template: section at the same level as bindings with a ref: to cd-template.
+
+`The result will look like this:`
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: cd-listener
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+      - ref: cd-binding
+      template:
+        ref: cd-template
+```
+
+6. Apply the event listener resource to the cluster
+```bash
+kubectl apply -f eventlistener.yaml
+```
+
+7. Check that it was created correctly.
+```
+tkn eventlistener ls
+```
+
+You will create the TriggerBinding named cd-binding and a TriggerTemplate named cd-template in the next steps.
+
+## Step 2: Create a TriggerBinding
+The next thing you need is a way to bind the incoming data from the event to pass on to the pipeline. To accomplish this, you use a TriggerBinding.
+
+Update the triggerbinding.yaml file to create a TriggerBinding named cd-binding that takes the body.repository.url and body.ref and binds them to the parameters repository and branch, respectively.
+
+`Your Task`
+1. The first thing you want to do is give the TriggerBinding the same name that is referenced in the EventListener, which is cd-binding.
+2. Next, you need to add a parameter named repository to the spec: section with a value that references $(body.repository.url).
+3. Finally, you need to add a parameter named branch to the spec: section with a value that references $(body.ref).
+
+`The result will look like this`
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: cd-binding
+spec:
+  params:
+    - name: repository
+      value: $(body.repository.url)
+    - name: branch
+      value: $(body.ref)
+```
+
+4. Apply the new TriggerBinding definition to the cluster:
+```bash
+kubectl apply -f triggerbinding.yaml
+```
+
+## Step 3: Create a TriggerTemplate
+The TriggerTemplate takes the parameters passed in from the TriggerBinding and creates a PipelineRun to start the pipeline.
+
+Update the triggertemplate.yaml file to create a TriggerTemplate named cd-template that defines the parameters required, and create a PipelineRun that will run the cd-pipeline you created in the previous lab.
+
+`Your Task`
+1. You must update the parameter section of the TriggerTemplate and fill out the resourcetemplates section:
+  Update Name and Add Parameters
+  - The first thing you want to do is give the TriggerTemplate the same name that is referenced in the EventListener, which is cd-template.
+  - Next, you need to add a parameter named repository to the spec: section with a description: of "The git repo" and a default: of " ".
+  - Then, you need to add a parameter named branch to the spec: section with a description: of "the branch for the git repo" and a default: of master.
+  Complete the Resource Template
+  - Add a serviceAccountName: with a value of pipeline.
+  - Add a pipelineRef: that refers to the cd-pipeline created in the last lab.
+  - Add a parameter named repo-url with a value referencing the TriggerTemplate repository parameter above.
+  - Add a second parameter named branch with a value referencing the TriggerTemplatebranch parameter above.
+
+`The result will look like this`
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: cd-template
+spec:
+  params:
+    - name: repository
+      description: The git repository
+      default: ""
+    - name: branch
+      description: the branch for the git repo
+      default: "master"
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: cd-pipeline-run-
+      spec:
+        serviceAccountName: pipeline
+        pipelineRef: cd-pipeline
+        params:
+          - name: repo-url
+            value: $(tt.params.repository)
+          - name: branch
+            value: $(tt.params.branch)
+```
+
+2. Apply the new TriggerTemplate definition to the cluster:
+```bash
+kubectl apply -f triggertemplate.yaml
+```
+
+## Optional: Adding serviceAccount
+The EventListener requires a service account to run. To create the service account for this example create a file named rbac.yaml and add the following:
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tekton-robot
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: triggers-example-eventlistener-binding
+subjects:
+- kind: ServiceAccount
+  name: tekton-robot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-roles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: triggers-example-eventlistener-clusterbinding
+subjects:
+- kind: ServiceAccount
+  name: tekton-robot
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-clusterroles
+```
+
+This service account allows the EventListener to create PipelineRuns.
+Apply the file to your cluster:
+```bash
+kubectl apply -f rbac.yaml
+```
+
+## Step 4: Start a Pipeline Run
+Now it is time to call the event listener and start a PipelineRun. You can do this locally using the curl command to test that it works.
+
+For this last step, you will need two terminal sessions.
+
+### Terminal 1
+In one of the sessions, you need to run the kubectl port-forward command to forward the port for the event listener so that you can call it on localhost.
+
+Use the kubectl port-forward command to forward port 8090 to 8080.
+```bash
+kubectl port-forward service/el-cd-listener  8090:8080
+```
+
+### Terminal 2
+Now you are ready to trigger the event listener by posting to the endpoint that it is listening on. You will now need to open a second terminal shell to issue commands.
+
+1. Open a new Terminal shell wtih the menu item Terminal > New Terminal.
+
+2. Use the curl command to send a payload to the event listener service.
+  ```bash
+  curl -X POST http://localhost:8090 \
+  -H 'Content-Type: application/json' \
+  -d '{"ref":"main","repository":{"url":"https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode"}}'
+  ```
+
+3. This should start a PipelineRun. You can check on the status with this command:
+  ```bash
+  tkn pipelinerun ls
+  ``` 
+  You should see something like this come back:
+
+4. You can also examine the PipelineRun logs using this command (the -L means "latest" so that you do not have to look up the name for the last run):
+  ```bash
+  tkn pipelinerun logs --last
+  ```
+
+## Conclusion
+Congratulations, you have successfully set up Tekton Triggers.
+
+In this lab, you learned how to create a Tekton Trigger to cause a pipeline run from external events like changes made to a repo in GitHub. You learned how to create EventListerners, TriggerTemplates, TriggerBindings and how to start a Pipeline Run on a port.
