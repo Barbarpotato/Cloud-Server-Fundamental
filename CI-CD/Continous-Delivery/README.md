@@ -1,6 +1,6 @@
 # Table Of Contents
 - [Building a Tekton Pipeline](#tekton-1)
-
+- [Building a Tektok Triggers](#tekton-triggers)
 
 
 # Understanding Continuous Delivery
@@ -289,7 +289,7 @@ Waiting for logs to be available...
 [clone : checkout] Cloning into 'wtecc-CICD_PracticeCode'...
 ```
 
-<a name="github-triggers"></a>
+<a name="tekton-triggers"></a>
 
 # Adding Github Triggers
 Running a pipeline manually has limited uses. In this lab you will create a Tekton Trigger to cause a pipeline run from external events like changes made to a repo in GitHub.
