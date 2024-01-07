@@ -1,6 +1,8 @@
 # Table Of Contents
 - [Building a Tekton Pipeline](#tekton-1)
 - [Building a Tektok Triggers](#tekton-triggers)
+- [Use Tekton Catalog](#tekton-catalog)
+- [Integrating Unit Test](#unit-test)
 
 
 # Understanding Continuous Delivery
@@ -300,18 +302,6 @@ After completing this lab, you will be able to:
 1. Create an EventListener, a TriggerBinding and a TriggerTemplate
 2. State how to trigger a deployment when changes are made to github
 
-## Set Up the Lab Environment
-You have a little preparation to do before you can start the lab.
-
-1. Open a Terminal
-2. Clone the repo: git clone https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git
-3. Change directory : cd wtecc-CICD_PracticeCode/labs/02_add_git_trigger/
-
-## Prerequisites
-This lab starts with the `cd-pipeline` pipeline and `checkout` and `echo` tasks from the previous lab.
-1. Check the task you will created: `tkn task ls`
-2. Check that the pipeline was created: `tkn pipeline ls`
-
 ## Step1: Create an EventListener
 The first thing you need is an event listener that is listening for incoming events from GitHub.
 
@@ -512,3 +502,275 @@ Now you are ready to trigger the event listener by posting to the endpoint that 
 Congratulations, you have successfully set up Tekton Triggers.
 
 In this lab, you learned how to create a Tekton Trigger to cause a pipeline run from external events like changes made to a repo in GitHub. You learned how to create EventListerners, TriggerTemplates, TriggerBindings and how to start a Pipeline Run on a port.
+
+<a name="tekton-catalog"></a>
+
+# Using Tekton Catalog
+
+Welcome to hands-on lab for Using the Tekton Catalog. The Tekton community provides a wide selection of tasks and pipelines that you can use in your CI/CD pipelines, so that you do not have to write all of them yourself. Many common tasks can be found at the Tekton Hub. In this lab, you will search for and use one of them.
+
+After completing this lab, you will be able to:
+1. Use the Tekton CD Catalog to install the git-clone task
+2. Describe the parameters required to use the git-clone task
+3. Use the git-clone task in a Tekton pipeline to clone your Git repository
+
+## Step 1: Add the git-clone Task
+You start by finding a task to replace the checkout task you initially created. While it was OK as a learning exercise, it needs a lot more capabilities to be more robust, and it makes sense to use the community-supplied task instead.
+
+(Optional) You can browse the Tekton Hub, find the git-clone command, copy the URL to the yaml file, and use kubectl to apply it manually. But it is much easier to use the Tekton CLI once you have found the task that you want.
+
+Use this command to install the git-clone task from Tekton Hub:
+```bash
+tkn hub install task git-clone --version 0.8
+```
+
+This installs the git-clone task into your cluster under your current active namespace.
+
+## Step 2: Create a Workspace
+Viewing the git-clone task requirements, you see that while it supports many more parameters than your original checkout task, it only requires two things:
+1. The URL of a Git repo to clone, provided with the url param
+2. A workspace called output
+
+You start by creating a PersistentVolumeClaim (PVC) to use as the workspace:
+
+A workspace is a disk volume that can be shared across tasks. The way to bind to volumes in Kubernetes is with a PersistentVolumeClaim.
+
+Since creating PVCs is beyond the scope of this lab, you have been provided with the following pvc.yaml file with these contents:
+```YAML
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pipelinerun-pvc
+spec:
+  storageClassName: skills-network-learner
+  resources:
+    requests:
+      storage:  1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+```
+
+Apply the new task definition to the cluster:
+```bash
+kubectl apply -f pvc.yaml
+```
+
+You can now reference this persistent volume by its name pipelinerun-pvc when creating workspaces for your Tekton tasks.
+
+### Step 3: Add a Workspace to the Pipeline
+
+In this step, you will add a workspace to the pipeline using the persistent volume claim you just created. To do this, you will edit the pipeline.yaml file and add a workspaces: definition as the first line under the spec: but before the params: and call it pipeline-workspace. Then you will add the workspace to the pipeline clone task and change the task to reference git-clone instead of your checkout task.
+
+`Your Task`
+1. Edit the pipeline.yaml file and add a workspaces: definition as the first line under the spec: but before the params: and call it pipeline-workspace.
+2. Next, add the workspace to the clone task after the name: and call it output because this is the workspace name that the git-clone task will be looking for.
+3. Change the name of the taskRef in the clone task to reference the git-clone task instead of checkout.
+4. Finally, change the name of the repo-url parameter to url because this is the name the git-clone tasks expects, but keep the mapping of $(params.repo-url), which is what the pipeline expects. Also, rename the branch parameter to revision, which is what git-clone expects.
+
+### Step 4: Run the Pipeline
+
+You can now use the Tekton CLI (tkn) to create a PipelineRun to run the pipeline.
+
+Use the following command to run the pipeline, passing in the URL of the repository, the branch to clone, the workspace name, and the persistent volume claim name.
+```bash
+tkn pipeline start cd-pipeline \
+    -p repo-url="https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git" \
+    -p branch="main" \
+    -w name=pipeline-workspace,claimName=pipelinerun-pvc \
+    --showlog
+```
+
+You can always see the pipeline run status by listing the PipelineRuns with:
+```bash
+tkn pipelinerun ls
+```
+
+You can check the logs of the last run with:
+```bash
+tkn pipelinerun logs --last
+```
+
+<a name="unit-test"></a>
+
+# Integrating Unit Test Automation
+Welcome to the hands-on lab for Integrating Unit Test Automation. In this lab, you will take the cloned code from the previous pipeline step and run linting and unit tests against it to ensure it is ready to be built and deployed.
+
+After completing this lab, you will be able to:
+
+1. Use the Tekton CD catalog to install the flake8 task
+2. Describe the parameters required to use the flake8 task
+3. Use the flake8 task in a Tekton pipeline to lint your code
+4. Create a test task from scratch and use it in your pipeline
+
+### Step 0: Check for cleanup
+Please check as part of Step 0 for the new cleanup task which has been added to tasks.yaml file.
+
+When a task that causes a compilation of the Python code, it leaves behind .pyc files that are owned by the specific user. For consecutive pipeline runs, the git-clone task tries to empty the directory but needs privileges to remove these files and this cleanup task takes care of that.
+
+The init task is added pipeline.yaml file which runs everytime before the clone task.
+
+Check the tasks.yaml file which has the new cleanup task updated.
+
+### Step 1: Add the flake8 Task
+
+Your pipeline has a placeholder for a lint step that uses the echo task. Now it is time to replace it with a real linter.
+
+You are going to use flake8 to lint your code. Luckily, Tekton Hub has a flake8 task that you can install and use:
+
+Use the following Tekton CLI command to install the flake8 task into your namespace.
+```bash
+tkn hub install task flake8
+```
+
+This will install the flake8 task in your Kubernetes namespace.
+
+### Step 2: Modify the Pipeline to Use flake8
+Now you will modify the pipeline.yaml file to use the new flake8 task.
+
+In reading the documentation for the flake8 task, you notice that it requires a workspace named source. Add the workspace to the lint task after the name:, but before the taskRef:.
+
+`Your Task`
+- Scroll down to the lint task.
+- Add the workspaces: keyword to the lint task after the task name: but before the taskRef:.
+- Specify the workspace name: as source.
+- Specify the workspace: reference as pipeline-workspace, which was created in the previous lab.
+- Change the taskRef: from echo to reference the flake8 task.
+
+`The result will look like this:`
+```yaml
+    - name: lint
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: flake8
+```
+
+### Step 3: Modify the Parameters for flake8
+Now that you have added the workspace and changed the task reference to flake8, you need to modify the pipeline.yaml file to change the parameters to what flake8 is expecting.
+
+In reading the documentation for the flake8 task, you see that it accepts an optional image parameter that allows you to specify your own container image. Since you are developing in a Python 3.9-slim container, you want to use python:3.9-slim as the image.
+
+The flake8 task also allows you to specify arguments to pass to flake8 using the args parameter. These arguments are specified as a list of strings where each string is a parameter passed to flake8. For example, the arguments --count --statistics would be specified as: ["--count", "--statistics"].
+
+`Your task:`
+1. Change the message parameter to the image parameter to specify the value of python:3.9-slim.
+2. Add a new parameter called args to specify the arguments as a list [] with the values --count --max-complexity=10 --max-line-length=127 --statistics to pass to flake8.
+
+`The result will look like this:`
+```yaml
+    - name: lint
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: flake8
+      params:
+      - name: image
+        value: "python:3.9-slim"
+      - name: args
+        value: ["--count","--max-complexity=10","--max-line-length=127","--statistics"]
+      runAfter:
+        - clone
+```
+
+Apply these changes to your cluster:
+```bash
+kubectl apply -f pipeline.yaml
+```
+
+### Step 4: Run the Pipeline
+You are now ready to run the pipeline and see if your new lint task is working properly. You will use the Tekton CLI to do this.
+
+Start the pipeline using the following command:
+```bash
+tkn pipeline start cd-pipeline \
+    -p repo-url="https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git" \
+    -p branch="main" \
+    -w name=pipeline-workspace,claimName=pipelinerun-pvc \
+    --showlog
+```
+
+You should see the pipeline run complete successfully. If you see errors, go back and check your work against the solutions provided.
+
+### Step 5: Create a Test Task
+Your pipeline also has a placeholder for a tests task that uses the echo task. Now you will replace it with real unit tests. In this step, you will replace the echo task with a call to a unit test framework called nosetests.
+
+There are no tasks in the Tekton Hub for nosetests, so you will write your own.
+
+Update the tasks.yaml file adding a new task called nose that uses the shared workspace for the pipeline and runs nosetests in a python:3.9-slim image as a shell script as seen in the course video.
+
+`the result will look like this:`
+```yaml
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: nose
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: args
+      description: Arguments to pass to nose
+      type: string
+      default: "-v"
+  steps:
+    - name: nosetests
+      image: python:3.9-slim
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+        python -m pip install --upgrade pip wheel
+        pip install -r requirements.txt
+        nosetests $(params.args)
+```
+
+Apply these changes to your cluster:
+```bash
+kubectl apply -f tasks.yaml
+```
+
+### Step 6: Modify the Pipeline to Use nose
+The final step is to use the new nose task in your existing pipeline in place of the echo task placeholder.
+```yaml
+    - name: tests
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: nose
+      params:
+      - name: args
+        value: "-v --with-spec --spec-color"
+      runAfter:
+        - lint
+```
+
+Apply these changes to your cluster:
+```bash
+kubectl apply -f pipeline.yaml
+```
+
+### Step 7: Run the Pipeline Again
+Now that you have your tests task complete, run the pipeline again using the Tekton CLI to see your new test tasks run:
+```bash
+tkn pipeline start cd-pipeline \
+    -p repo-url="https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git" \
+    -p branch="main" \
+    -w name=pipeline-workspace,claimName=pipelinerun-pvc \
+    --showlog
+```
+
+You can see the pipeline run status by listing the PipelineRun with:
+```bash
+tkn pipelinerun ls
+```
+
+You can check the logs of the last run with:
+```bash
+tkn pipelinerun logs --last
+```
+
