@@ -1,3 +1,7 @@
+# Table Of Contents
+- [ Running tests with nose ](#test-with-nose)
+
+
 # Test Driven Development
 
 - In TDD, test cases drive code design. 
@@ -11,6 +15,7 @@
 - The two most popular testing frameworks for Python are PyUnit and Pytest. Two other popular testing frameworks for Python are Doctest and RSpec. 
 - Nose is a Python test runner that can add color to test output and call the code coverage tool.
 
+<a name="test-with-nose"></a>
 
 ## Running Tests with Nose
 
@@ -109,5 +114,5 @@ Now that you have established your setup.cfg file, go to your terminal and run n
 nosetests
 ```
 
-
-
+![alt images](/images/01_nosetests.png)
+<br>
